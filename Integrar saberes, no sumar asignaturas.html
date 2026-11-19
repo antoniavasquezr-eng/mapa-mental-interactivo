@@ -347,7 +347,13 @@ function bird(x, y, s, animate){
     width="${size}" height="${size}" 
     preserveAspectRatio="xMidYMid meet" 
     class="${animate ? 'bird-img' : ''}" 
-    style="pointer-events:none" />`;
+    style=@keyframes vuelo {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.bird-img {
+  animation: vuelo 1.5s ease-in-out infinite alternate;
+}
 }
 }
 function leaf(x, y, r, s, lilac){
