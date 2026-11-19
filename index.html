@@ -343,16 +343,21 @@ let narrow = false;
 
 function bird(x, y, s, animate){
   const size = 160 * s; 
-  return `<image href="pajaro.png" x="${x}" y="${y}" 
+  return `<image href="./pajaro.png" x="${x}" y="${y}" 
     width="${size}" height="${size}" 
     preserveAspectRatio="xMidYMid meet" 
     class="${animate ? 'bird-img' : ''}" 
-    style=@keyframes vuelo {
+    style="pointer-events:none" />`;
+}
+}
+.bird-img {
+  @keyframes vuelo {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
 }
 .bird-img {
   animation: vuelo 1.5s ease-in-out infinite alternate;
+}
 }
 }
 }
