@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Integrar saberes, no sumar asignaturas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F6ECCD; --surface:#FFF8E6; --surface-2:#EFE3BE; --sky:#FBF3DC;
+  --ink:#2E2D29; --ink-soft:#5B5A50;
+  --lilac:#C9B8DE; --lilac-soft:#E6DCF0; --lilac-deep:#7B63A8;
+  --olive:#7C806B; --olive-soft:#D9DACB; --olive-deep:#5D604F;
+  --yellow:#F4BE47; --yellow-soft:#FBE3A6;
+  --line:#2E2D29; --bird:#868A74; --bird-belly:#F3E2B5; --cream-text:#FFF8E6;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#23231E; --surface:#2F2E27; --surface-2:#3A392F; --sky:#2A2923;
+    --ink:#F3EAD0; --ink-soft:#C9C2AA;
+    --lilac:#6A5A8C; --lilac-soft:#3D3550; --lilac-deep:#CDBDE6;
+    --olive:#80846E; --olive-soft:#3C3D33; --olive-deep:#C3C7AE;
+    --yellow:#E8B33E; --yellow-soft:#54461F;
+    --line:#E9DFC2; --bird:#9A9E86; --bird-belly:#E8D6A6; --cream-text:#FFF8E6;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#23231E; --surface:#2F2E27; --surface-2:#3A392F; --sky:#2A2923;
+  --ink:#F3EAD0; --ink-soft:#C9C2AA;
+  --lilac:#6A5A8C; --lilac-soft:#3D3550; --lilac-deep:#CDBDE6;
+  --olive:#80846E; --olive-soft:#3C3D33; --olive-deep:#C3C7AE;
+  --yellow:#E8B33E; --yellow-soft:#54461F;
+  --line:#E9DFC2; --bird:#9A9E86; --bird-belly:#E8D6A6; --cream-text:#FFF8E6;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Montserrat",system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;font-size:16px;line-height:1.6}
+.wrap{max-width:1120px;margin:0 auto;padding:40px 20px 64px}
+h1,h2,h3{line-height:1.15;margin:0}
+h1{font-size:clamp(2.1rem,5.4vw,3.6rem);font-weight:900;letter-spacing:-.02em;max-width:15ch}
+h2{font-size:clamp(1.5rem,3.2vw,2.1rem);font-weight:900;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:800}
+p{margin:0}
+.lead{font-size:1.1rem;color:var(--ink-soft);max-width:60ch;margin-top:16px}
+.hero{display:grid;gap:8px;margin-bottom:28px}
+.tag{display:inline-block;background:var(--lilac);color:var(--ink);font-weight:700;font-size:.85rem;padding:4px 14px;border-radius:999px;justify-self:start}
+
+/* ---------- Escena ---------- */
+.scene-card{background:var(--sky);border-radius:32px;overflow:hidden;position:relative}
+.scene-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:18px 22px 0;min-height:52px;position:relative;z-index:2}
+.crumb{font-weight:700;font-size:.95rem;color:var(--ink-soft)}
+.crumb b{color:var(--ink)}
+.back{font:inherit;font-size:.88rem;font-weight:700;background:var(--surface);color:var(--ink);border:2px solid var(--line);border-radius:999px;padding:6px 14px;cursor:pointer;white-space:nowrap}
+.back[hidden]{display:none}
+#scene{display:block;width:100%;height:auto}
+#scene text{font-family:"Montserrat",system-ui,sans-serif}
+.hill-l{fill:var(--lilac)} .hill-r{fill:var(--olive)} .ground{fill:var(--surface-2)}
+.dot{fill:var(--yellow)}
+.leaf{fill:var(--olive);opacity:.85} .leaf-l{fill:var(--lilac)}
+.leaf-vein{stroke:var(--olive-deep);stroke-width:1.6;fill:none;stroke-linecap:round}
+.trail{fill:none;stroke:var(--line);stroke-width:3;stroke-dasharray:14 10;stroke-linecap:round;opacity:.8}
+.string{fill:none;stroke:var(--lilac-deep);stroke-width:3;stroke-linecap:round}
+.thread{stroke:var(--lilac-deep);stroke-width:2.2}
+.knot{fill:var(--lilac-deep)}
+.label{fill:var(--ink);font-weight:800;text-anchor:middle}
+.sublabel{fill:var(--ink-soft);font-weight:600;text-anchor:middle}
+.ico{fill:none;stroke:var(--ink);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.ico .f{fill:var(--ink);stroke:none}
+.node{cursor:pointer;outline:none}
+.node .disc{fill:var(--surface);stroke:var(--c);stroke-width:6;transition:fill .25s}
+.node .halo{fill:none;stroke:var(--c);stroke-width:2;opacity:0;transition:opacity .2s}
+.node:hover .halo,.node:focus-visible .halo{opacity:1}
+.node:focus-visible .halo{stroke:var(--lilac-deep);stroke-width:4}
+.node.sel .disc{fill:var(--c-fill)}
+.node.sel .halo{opacity:1;stroke:var(--ink);stroke-width:3}
+.theme-node .disc{fill:var(--c-fill)}
+.theme-node:hover .art{transform:translateY(-4px)}
+.art{transition:transform .25s}
+.school-body{fill:var(--surface)} .school-roof{fill:var(--yellow)} .school-door{fill:var(--lilac)}
+.school-win{fill:var(--ink)} .school-line{stroke:var(--ink);stroke-width:3;fill:none;stroke-linecap:round}
+.tree{fill:var(--olive)} .tree-l{fill:var(--lilac)} .trunk{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.bird-body{fill:var(--bird)} .bird-belly{fill:var(--bird-belly)} .bird-wing{fill:var(--lilac);stroke:var(--lilac-deep);stroke-width:2}
+.bird-beak{fill:var(--ink)} .bird-eye{fill:var(--ink)} .bird-smile{stroke:var(--ink);stroke-width:2;fill:none;stroke-linecap:round}
+.bird-tail{fill:var(--olive-deep)}
+@keyframes drop{from{transform:translateY(-26px);opacity:0}to{transform:none;opacity:1}}
+@keyframes flap{0%,100%{transform:rotate(0)}50%{transform:rotate(-14deg)}}
+.dropping{animation:drop .55s cubic-bezier(.2,.9,.25,1.2) both}
+.wing-anim{transform-box:fill-box;transform-origin:20% 90%;animation:flap .5s ease-in-out 3}
+.question{display:flex;align-items:center;gap:16px;margin:0 22px 22px;background:var(--yellow);color:#2E2D29;border-radius:22px;padding:14px 20px;font-weight:800;font-size:clamp(1rem,2.2vw,1.25rem);line-height:1.3}
+.question[hidden]{display:none}
+.question svg{flex:none}
+.question small{display:block;font-weight:600;font-size:.82rem;opacity:.8}
+
+/* ---------- Panel ---------- */
+.explore{display:grid;gap:18px}
+.panel{background:var(--surface);border-radius:32px;padding:28px}
+.p-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr);gap:24px;align-items:start}
+@media (max-width:760px){.p-grid{grid-template-columns:1fr}}
+.p-head{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.p-ico{flex:none;width:64px;height:64px;border-radius:50%;display:grid;place-items:center;border:5px solid var(--c);background:var(--c-fill)}
+.p-ico svg{width:40px;height:40px}
+.kicker{font-size:.88rem;font-weight:700;color:var(--olive-deep)}
+.panel h3{font-size:1.45rem;font-weight:900}
+.panel p+p{margin-top:12px}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:560px){.pair{grid-template-columns:1fr}}
+.pair div{border-radius:18px;padding:14px 16px;background:var(--bg)}
+.pair b{display:block;font-size:.85rem;font-weight:800;margin-bottom:2px}
+.pair .school b{color:var(--lilac-deep)} .pair .terr b{color:var(--olive-deep)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.chip{font:inherit;font-size:.85rem;font-weight:700;border-radius:999px;padding:6px 12px;border:2px solid var(--line);background:transparent;color:var(--ink);cursor:pointer}
+.chip.on{background:var(--ink);color:var(--bg)}
+.chip:focus-visible,.back:focus-visible,.btn:focus-visible,.field input:focus-visible,.field textarea:focus-visible{outline:3px solid var(--lilac-deep);outline-offset:3px}
+.hint{color:var(--ink-soft);font-size:.92rem;margin-top:14px}
+
+/* ---------- Niveles en escalera ---------- */
+section.block{margin-top:64px}
+section.block > p.intro{color:var(--ink-soft);max-width:62ch;margin-top:10px}
+.stairs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:28px;align-items:end}
+@media (max-width:720px){.stairs{grid-template-columns:1fr}}
+.step{border-radius:200px 200px 26px 26px;padding:88px 24px 26px;position:relative;text-align:center}
+.step:nth-child(1){background:var(--olive);color:var(--cream-text);min-height:290px}
+.step:nth-child(2){background:var(--lilac);color:var(--ink);min-height:330px}
+.step:nth-child(3){background:var(--olive);color:var(--cream-text);min-height:370px}
+@media (max-width:720px){.step{min-height:0 !important;border-radius:120px 120px 26px 26px}}
+.step .num{position:absolute;top:18px;left:50%;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;background:var(--yellow);color:#2E2D29;display:grid;place-items:center;font-weight:900;font-size:1.05rem;border:4px solid var(--surface)}
+.step h3{font-size:1.35rem;font-weight:900}
+.step .verb{display:inline-block;margin-top:8px;font-weight:800;font-size:.85rem;border-radius:999px;padding:3px 12px;background:rgba(255,248,230,.25)}
+.step:nth-child(2) .verb{background:rgba(46,45,41,.12)}
+.step p{margin-top:12px;text-align:left}
+.common{margin-top:18px;display:flex;gap:14px;align-items:center;background:var(--surface);border-radius:22px;padding:16px 20px}
+.common svg{flex:none}
+
+/* ---------- Momentos ---------- */
+.flow{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:14px;margin-top:24px;align-items:stretch}
+@media (max-width:760px){.flow{grid-template-columns:1fr}}
+.moment{border-radius:26px;padding:24px;position:relative}
+.moment.together{background:var(--lilac-soft)}
+.moment.split{background:var(--surface)}
+.moment h3{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.moment ul{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.moment li{display:flex;gap:10px;align-items:flex-start}
+.moment li span{flex:none;font-weight:800;font-size:.8rem;background:var(--yellow);color:#2E2D29;border-radius:999px;padding:2px 10px;margin-top:2px}
+
+/* ---------- Por qué ---------- */
+.why{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-top:24px}
+@media (max-width:900px){.why{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:520px){.why{grid-template-columns:1fr}}
+.why div{background:var(--surface);border-radius:24px;padding:20px}
+.why svg{display:block;margin-bottom:10px}
+.why b{display:block;font-weight:800;margin-bottom:4px}
+.warn{margin-top:14px;background:var(--yellow-soft);border-radius:24px;padding:20px 22px}
+.warn p+p{margin-top:8px}
+
+/* ---------- Tu turno ---------- */
+.builder{background:var(--surface);border-radius:32px;padding:28px;margin-top:24px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:16px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:16px}
+@media (max-width:720px){.grid3,.grid2{grid-template-columns:1fr}}
+.field{display:grid;gap:6px}
+.field label{font-weight:700;font-size:.92rem}
+.field input,.field textarea{font:inherit;font-size:.95rem;color:var(--ink);background:var(--bg);border:2px solid var(--surface-2);border-radius:14px;padding:10px 12px;width:100%}
+.field textarea{min-height:92px;resize:vertical}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:20px}
+.btn{font:inherit;font-weight:800;border:none;border-radius:999px;padding:12px 22px;cursor:pointer;background:var(--ink);color:var(--bg)}
+.btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--line)}
+.status{font-size:.9rem;color:var(--ink-soft)}
+footer{margin-top:48px;font-size:.85rem;color:var(--ink-soft)}
+@media (prefers-reduced-motion:reduce){.dropping,.wing-anim{animation:none}.art,.node .disc{transition:none}}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header class="hero">
+    <span class="tag">Unidad 4 · Planificación multinivel</span>
+    <h1>Integrar saberes, no sumar asignaturas</h1>
+    <p class="lead">En el modelo horizontal, todo el curso trabaja un mismo tema del territorio y cada nivel lo aborda con una tarea distinta. Elige un tema y descubre qué saberes de la comunidad y de la escuela se pueden tejer en una sola planificación.</p>
+  </header>
+
+  <div class="explore">
+    <div class="scene-card">
+      <div class="scene-top">
+        <span class="crumb" id="crumb">Tu territorio</span>
+        <button class="back" id="back" hidden>Volver a los temas</button>
+      </div>
+      <svg id="scene" role="group" aria-label="Mapa de saberes del territorio"></svg>
+      <div class="question" id="question" hidden></div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </div>
+
+  <section class="block">
+    <h2 id="levels-title">Un mismo tema, tres niveles</h2>
+    <p class="intro" id="levels-intro"></p>
+    <div class="stairs" id="stairs"></div>
+    <div class="common" id="common"></div>
+  </section>
+
+  <section class="block">
+    <h2>La clase en tres momentos</h2>
+    <p class="intro">El modelo horizontal permite un solo plan de clase para todo el grupo: se empieza y se termina juntos, y en el desarrollo cada nivel avanza con su propia tarea.</p>
+    <div class="flow" id="flow"></div>
+  </section>
+
+  <section class="block">
+    <h2>¿Por qué planificar en horizontal?</h2>
+    <div class="why" id="why"></div>
+    <div class="warn">
+      <p><b>Integrar no es que todos hagan lo mismo.</b> Si 1° y 6° resuelven la misma ficha, el tema es común, pero el aprendizaje no está diferenciado.</p>
+      <p><b>Tampoco es sumar asignaturas.</b> No basta con «un poco de lenguaje y un poco de ciencias» sobre el agua: la pregunta es qué problema del territorio necesita de ambas para entenderse.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Tu turno: arma tu propio tema</h2>
+    <p class="intro">Piensa en un tema de tu territorio que pueda reunir a todos tus estudiantes. Lo que escribas queda guardado en este navegador y puedes copiarlo para tu planificación.</p>
+    <div class="builder">
+      <div class="grid2" style="margin-top:0">
+        <div class="field"><label for="f-tema">Tema del territorio</label><input id="f-tema" placeholder="Por ejemplo: la cosecha, el camino a la escuela, la radio local"></div>
+        <div class="field"><label for="f-preg">Pregunta que une al curso</label><input id="f-preg" placeholder="¿…?"></div>
+      </div>
+      <div class="field" style="margin-top:16px"><label for="f-terr">¿Qué saben de este tema las familias y la comunidad?</label><textarea id="f-terr"></textarea></div>
+      <div class="grid3">
+        <div class="field"><label for="f-n1">Tarea para los más pequeños</label><textarea id="f-n1"></textarea></div>
+        <div class="field"><label for="f-n2">Tarea para el nivel intermedio</label><textarea id="f-n2"></textarea></div>
+        <div class="field"><label for="f-n3">Tarea para los mayores</label><textarea id="f-n3"></textarea></div>
+      </div>
+      <div class="grid2">
+        <div class="field"><label for="f-ini">Inicio común</label><textarea id="f-ini"></textarea></div>
+        <div class="field"><label for="f-cie">Cierre común</label><textarea id="f-cie"></textarea></div>
+      </div>
+      <div class="row">
+        <button class="btn" id="copy">Copiar mi planificación</button>
+        <button class="btn ghost" id="clear">Borrar</button>
+        <span class="status" id="status" role="status"></span>
+      </div>
+    </div>
+  </section>
+
+  <footer>Academia 99 · Fundación 99 · Curso Gestión curricular y pedagógica para el multigrado. Los ejemplos son orientativos: revisa los Objetivos de Aprendizaje de tus cursos antes de planificar.</footer>
+</main>
+
+<script>
+/* ---------- Iconos (caja 48×48) ---------- */
+const ICONS = {
+  agua:`<path d="M24 5C24 5 11 20 11 29a13 13 0 0 0 26 0C37 20 24 5 24 5Z"/><path d="M17 30a7 7 0 0 0 7 7"/>`,
+  oficios:`<g transform="rotate(-35 24 24)"><path d="M12 9h20a3 3 0 0 1 3 3v4a3 3 0 0 1-3 3H12Z"/><path d="M12 9c-3 0-6 2-7 5"/><path d="M20 19v24"/></g><path d="M30 42c6-2 10-6 12-12"/><circle class="f" cx="40" cy="40" r="2.6"/>`,
+  feria:`<path d="M6 17 10 7h28l4 10"/><path d="M6 17q4.5 7 9 0q4.5 7 9 0q4.5 7 9 0q4.5 7 9 0"/><path d="M10 22v20M38 22v20"/><path d="M10 31h28"/><circle class="f" cx="17" cy="27" r="2.6"/><circle class="f" cx="24" cy="27" r="2.6"/><circle class="f" cx="31" cy="27" r="2.6"/>`,
+  terr:`<circle cx="34" cy="13" r="5"/><path d="M4 39q12-18 23-6q7-8 17 6"/><path d="M4 39h40"/><path d="M14 30v-5M14 25l-3 3M14 25l3 2"/>`,
+  Lenguaje:`<path d="M24 14C18 10 11 10 6 12v26c5-2 12-2 18 2c6-4 13-4 18-2V12c-5-2-12-2-18 2Z"/><path d="M24 14v26"/><path d="M11 20h7M11 26h7M30 20h7M30 26h7"/>`,
+  "Matemática":`<path d="M14 8v12M8 14h12"/><path d="M28 14h12"/><path d="M9 29l10 10M19 29 9 39"/><path d="M28 34h12"/><circle class="f" cx="34" cy="28.5" r="2.2"/><circle class="f" cx="34" cy="39.5" r="2.2"/>`,
+  Ciencias:`<circle cx="20" cy="20" r="11"/><path d="M28 28l12 12"/><path d="M15 23c0-6 4-9 10-9c0 6-4 9-10 9Z"/>`,
+  Historia:`<path d="M14 7h20M14 41h20"/><path d="M16 7c0 10 16 10 16 17s-16 7-16 17"/><path d="M32 7c0 10-16 10-16 17s16 7 16 17"/><path d="M20 37h8"/>`,
+  "Artes y Tecnología":`<path d="M24 6C12 6 6 15 6 24c0 10 8 18 17 18c4 0 4-4 2-7s1-6 5-6h5c5 0 7-4 7-8C42 12 34 6 24 6Z"/><circle class="f" cx="16" cy="20" r="2.8"/><circle class="f" cx="24" cy="14" r="2.8"/><circle class="f" cx="32" cy="18" r="2.8"/><circle class="f" cx="15" cy="30" r="2.8"/>`,
+  target:`<circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="10"/><circle class="f" cx="24" cy="24" r="4"/><path d="M24 24 40 8M34 8h6v6"/>`
+};
+const iconSvg = (k, size=40, cls="ico") => `<svg viewBox="0 0 48 48" width="${size}" height="${size}" aria-hidden="true"><g class="${cls}">${ICONS[k]}</g></svg>`;
+
+/* ---------- Datos ---------- */
+const DATA = {
+  agua: {
+    name:"El agua", c:"var(--lilac-deep)", fill:"var(--lilac-soft)",
+    q:"¿De dónde viene el agua que tomamos y cómo la cuidamos?",
+    terr:"Las familias saben de turnos de riego, del comité de Agua Potable Rural (APR), de pozos, vertientes y norias, y de las señales que anuncian lluvia o sequía.",
+    voices:["Turnos de riego","Comité APR","Vertientes y norias","Señales de lluvia"],
+    subjects:{
+      Lenguaje:["Entrevistar a un vecino del comité de agua y escribir un texto informativo o un afiche.","Los relatos de los mayores sobre cómo era el agua antes se vuelven textos escritos."],
+      "Matemática":["Medir el consumo en litros, registrar lluvias en tablas y leer gráficos.","Los turnos de riego y la capacidad de un estanque son problemas reales de medición."],
+      Ciencias:["El ciclo del agua, sus estados y la diferencia entre agua potable y no potable.","La vertiente, el canal y el pozo de la comunidad son el laboratorio."],
+      Historia:["Cómo se organiza la comunidad para administrar el agua y cómo ha cambiado su acceso.","El APR y las juntas de regantes son ejemplos vivos de organización comunitaria."],
+      "Artes y Tecnología":["Construir una maqueta de la cuenca o un filtro de agua simple.","Los materiales del entorno sirven para diseñar y probar soluciones."]
+    },
+    levels:[["1° y 2°","Identificar","Reconocen dónde se usa el agua en su casa y en la escuela. Dibujan y cuentan los usos."],
+            ["3° y 4°","Explicar","Explican el ciclo del agua y miden cuánta agua se usa en una actividad cotidiana."],
+            ["5° y 6°","Analizar y proponer","Analizan el uso del agua con datos de lluvia o consumo y proponen acciones a la comunidad."]],
+    common:"Todos trabajan el agua, pero cada nivel lo hace con una profundidad y una tarea acorde a lo que puede aprender.",
+    start:"Escuchan juntos el relato de un vecino sobre cómo llega el agua a la comunidad.",
+    end:"Arman entre todos el mural «El camino del agua en nuestra comunidad», donde cada nivel aporta su parte."
+  },
+  oficios: {
+    name:"Los oficios", c:"var(--yellow)", fill:"var(--yellow-soft)",
+    q:"¿Qué saben hacer las manos de nuestra comunidad?",
+    terr:"En la comunidad hay agricultores, apicultores, pescadores, carpinteros, tejedoras o arrieros. Cada oficio tiene herramientas, palabras, medidas y calendarios propios.",
+    voices:["Herramientas","Palabras del oficio","Medidas «a la cuarta»","Calendario de faenas"],
+    subjects:{
+      Lenguaje:["Escribir un instructivo sobre cómo se hace algo y armar un glosario del oficio.","El vocabulario del oficio entra a la sala como palabra escrita y respetada."],
+      "Matemática":["Medidas tradicionales y convencionales, costos y precios, patrones en los tejidos.","Medir «a la cuarta» o «por atado» permite comparar con el metro y el kilo."],
+      Ciencias:["Propiedades de los materiales (madera, lana, greda) y ciclos de plantas o animales.","El oficio muestra la ciencia en uso: por qué se seca la madera o cuándo florece la planta."],
+      Historia:["Cómo ha cambiado el trabajo en el tiempo y qué oficios se están perdiendo.","Las historias de abuelos y abuelas son fuentes para reconstruir el pasado local."],
+      "Artes y Tecnología":["Diseñar y elaborar un objeto siguiendo un proceso, como lo hace el oficio.","Los procesos del oficio enseñan a planificar, probar y mejorar."]
+    },
+    levels:[["1° y 2°","Nombrar","Nombran los oficios de su familia y dibujan sus herramientas con sus nombres."],
+            ["3° y 4°","Explicar","Escriben un instructivo de un proceso del oficio, con pasos y materiales."],
+            ["5° y 6°","Comparar y calcular","Comparan cómo ha cambiado el oficio y calculan lo que cuesta producir algo."]],
+    common:"El oficio es el hilo común; cada nivel entra por una puerta distinta: nombrar, explicar o analizar.",
+    start:"Un apoderado o vecino visita la sala y muestra su oficio en vivo, o lo cuenta en un audio.",
+    end:"Organizan una pequeña «feria de oficios» donde cada nivel presenta lo que descubrió."
+  },
+  feria: {
+    name:"La feria local", c:"var(--olive)", fill:"var(--olive-soft)",
+    q:"¿Cómo llega la comida de la tierra a nuestra mesa?",
+    terr:"En la feria se conocen los productos de temporada, los precios, las formas de medir (por kilo, por atado, por saco), el trueque y las relaciones entre vecinos.",
+    voices:["Productos de temporada","Precios y trueque","Por kilo o por saco","Quién produce qué"],
+    subjects:{
+      Lenguaje:["Leer y escribir carteles, avisos y diálogos de compra y venta; textos para convencer.","La forma de ofrecer los productos en la feria es un modelo de lenguaje persuasivo."],
+      "Matemática":["Dinero, sumas, restas y vuelto; fracciones como «medio kilo»; comparar precios.","Toda la feria es un problema matemático en vivo, con distinta dificultad para cada nivel."],
+      Ciencias:["Frutas y verduras de temporada, alimentación saludable y partes de las plantas.","Lo que se vende cambia con las estaciones: un calendario natural."],
+      Historia:["De dónde vienen los productos y quiénes los producen: un mapa de la economía local.","La feria muestra cómo se relacionan el campo, el pueblo y la ciudad."],
+      "Artes y Tecnología":["Diseñar un puesto, un envase o una etiqueta para un producto local.","Los productores de la zona pueden ser los «clientes» del diseño."]
+    },
+    levels:[["1° y 2°","Clasificar y contar","Clasifican productos (frutas, verduras, otros) y cuentan monedas para comprar uno."],
+            ["3° y 4°","Calcular","Calculan el total de una compra y el vuelto, y leen la información de las etiquetas."],
+            ["5° y 6°","Comparar y decidir","Comparan precios por kilo con fracciones y decimales, y proponen cómo mejorar un puesto."]],
+    common:"La feria reúne a todos: los pequeños cuentan, los medianos calculan y los mayores comparan y deciden.",
+    start:"Visitan la feria o recrean un puesto en la sala con productos reales.",
+    end:"Abren la «feria de la escuela»: cada nivel atiende, cobra o explica sus precios."
+  }
+};
+const THEMES = Object.keys(DATA);
+const SUBJ = ["Lenguaje","Matemática","Ciencias","Historia","Artes y Tecnología"];
+const SUBJ_COL = {
+  "__terr":["var(--yellow)","var(--yellow-soft)"],
+  Lenguaje:["var(--olive)","var(--olive-soft)"],
+  "Matemática":["var(--lilac-deep)","var(--lilac-soft)"],
+  Ciencias:["var(--ink)","var(--surface-2)"],
+  Historia:["var(--yellow)","var(--yellow-soft)"],
+  "Artes y Tecnología":["var(--olive)","var(--olive-soft)"]
+};
+const LABEL = { "__terr":["Saberes del","territorio"], "Artes y Tecnología":["Artes y","Tecnología"] };
+
+/* ---------- Escena SVG ---------- */
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("scene");
+let state = { theme:null, sat:null };
+let narrow = false;
+
+function bird(x, y, s, animate){
+  return `<g transform="translate(${x} ${y}) scale(${s})">
+    <path class="bird-tail" d="M14 54 -14 66 -6 46Z"/>
+    <ellipse class="bird-body" cx="40" cy="50" rx="31" ry="17" transform="rotate(-14 40 50)"/>
+    <ellipse class="bird-belly" cx="46" cy="58" rx="18" ry="8" transform="rotate(-14 46 58)"/>
+    <circle class="bird-body" cx="72" cy="34" r="17"/>
+    <path class="bird-beak" d="M86 31 116 26 87 38Z"/>
+    <circle class="bird-eye" cx="76" cy="30" r="3"/>
+    <path class="bird-smile" d="M70 39q4 4 9 0"/>
+    <path class="bird-wing ${animate?'wing-anim':''}" d="M36 44C26 14 46-6 70-2C62 12 56 28 50 46Z"/>
+  </g>`;
+}
+function leaf(x, y, r, s, lilac){
+  return `<g transform="translate(${x} ${y}) rotate(${r}) scale(${s})"><path class="${lilac?'leaf-l':'leaf'}" d="M0 0C10-14 30-14 40 0C30 14 10 14 0 0Z"/><path class="leaf-vein" d="M4 0H36M16 0l7-6M16 0l7 6M26 0l6-5M26 0l6 5"/></g>`;
+}
+function dots(x, y){
+  let o=""; for(let i=0;i<3;i++) for(let j=0;j<3;j++) o+=`<circle class="dot" cx="${x+i*20}" cy="${y+j*20}" r="5.5"/>`; return o;
+}
+function school(x, y, s){
+  return `<g transform="translate(${x} ${y}) scale(${s})">
+    <path class="trunk" d="M-78 0v-26"/><circle class="tree" cx="-78" cy="-40" r="20"/>
+    <path class="trunk" d="M84 0v-20"/><ellipse class="tree-l" cx="84" cy="-34" rx="15" ry="20"/>
+    <rect class="school-body" x="-52" y="-62" width="104" height="62"/>
+    <path class="school-line" d="M-52-62h104v62h-104z"/>
+    <path class="school-roof" d="M-66-58 0-104 66-58Z"/><path class="school-line" d="M-66-58 0-104 66-58Z"/>
+    <path class="school-line" d="M0-104v-30"/><path class="school-roof" d="M0-134h26l-6 8 6 8H0Z"/>
+    <circle class="school-body" cx="0" cy="-74" r="9"/><circle class="school-line" cx="0" cy="-74" r="9"/><path class="school-line" d="M0-79v5h4"/>
+    <rect class="school-door" x="-12" y="-34" width="24" height="34" rx="3"/>
+    <rect class="school-win" x="-40" y="-46" width="16" height="16" rx="2"/><rect class="school-win" x="24" y="-46" width="16" height="16" rx="2"/>
+    <path class="school-line" d="M-100 0h200"/>
+  </g>`;
+}
+function labelText(x, y, lines, size, cls="label"){
+  return `<text class="${cls}" x="${x}" y="${y}" font-size="${size}">${lines.map((l,i)=>`<tspan x="${x}" dy="${i?size*1.15:0}">${l}</tspan>`).join("")}</text>`;
+}
+function curve(x1,y1,x2,y2,b){
+  const mx=(x1+x2)/2, my=(y1+y2)/2, dx=x2-x1, dy=y2-y1;
+  return `M${x1} ${y1} Q${mx-dy*b} ${my+dx*b} ${x2} ${y2}`;
+}
+
+function drawOverview(){
+  const W = narrow?420:900, H = narrow?660:560;
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const P = narrow
+    ? { school:[210,600,.9], th:{oficios:[210,180], agua:[100,370], feria:[320,370]}, r:62, bird:[8,8,.55], lab:17 }
+    : { school:[450,500,1], th:{agua:[175,270], oficios:[450,175], feria:[725,270]}, r:78, bird:[30,30,.8], lab:20 };
+  let o = "";
+  o += narrow
+    ? `<path class="hill-l" d="M0 520C80 540 150 610 200 660H0Z"/><path class="hill-r" d="M230 660C300 600 360 560 420 545V660Z"/>`
+    : `<path class="hill-l" d="M0 380C130 400 260 480 380 560H0Z"/><path class="hill-r" d="M540 560C650 480 790 430 900 420V560Z"/>`;
+  o += narrow ? dots(340,30) : dots(800,40);
+  o += narrow ? leaf(14,300,-40,1,true)+leaf(380,250,200,.9) : leaf(40,500,-30,1.3)+leaf(840,340,210,1.1,true)+leaf(320,70,-15,.9,true);
+  const [sx,sy] = P.school;
+  const top = sy - (narrow?115:130);
+  for(const k of THEMES){
+    const [x,y] = P.th[k];
+    let ex, ey;
+    if(Math.abs(x-sx)<5){ ex=x; ey=y+P.r+(narrow?54:66); }
+    else { const dx=sx-x, dy=top-y, L=Math.hypot(dx,dy); ex=x+dx/L*(P.r+8); ey=y+dy/L*(P.r+8); }
+    o += `<path class="trail" d="${curve(ex, ey, sx, top, k==='agua'?-.15:k==='feria'?.15:0)}"/>`;
+  }
+  o += school(sx, sy, P.school[2]);
+  o += narrow ? `<path class="trail" d="M80 70C130 110 150 90 170 105"/>` : `<path class="trail" d="M150 95C220 140 270 110 330 140"/>`;
+  o += bird(P.bird[0],P.bird[1],P.bird[2],false);
+  for(const k of THEMES){
+    const [x,y] = P.th[k], d = DATA[k];
+    o += `<g class="node theme-node" data-theme="${k}" tabindex="0" role="button" aria-label="Explorar ${d.name}" style="--c:${d.c};--c-fill:${d.fill}">
+      <circle class="halo" cx="${x}" cy="${y}" r="${P.r+10}"/>
+      <circle class="disc" cx="${x}" cy="${y}" r="${P.r}"/>
+      <g class="art"><g transform="translate(${x-P.r*.62} ${y-P.r*.62}) scale(${P.r*1.24/48})"><g class="ico">${ICONS[k]}</g></g></g>
+      ${labelText(x, y+P.r+ (narrow?26:32), [d.name], P.lab)}
+      ${labelText(x, y+P.r+ (narrow?44:54), ["Toca para explorar"], P.lab*.68, "sublabel")}
+    </g>`;
+  }
+  svg.innerHTML = o;
+}
+
+function drawTheme(animate){
+  const d = DATA[state.theme];
+  const W = narrow?420:900, H = narrow?640:410;
+  svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+  const keys = ["__terr", ...SUBJ];
+  let o = "";
+  o += narrow
+    ? `<path class="hill-l" d="M0 560C60 580 110 610 140 640H0Z"/><path class="hill-r" d="M300 640C340 610 380 590 420 585V640Z"/>`
+    : `<path class="hill-l" d="M0 360C80 370 140 390 190 410H0Z"/><path class="hill-r" d="M720 410C790 385 850 370 900 366V410Z"/>`;
+  o += narrow ? dots(352,22) : dots(820,24);
+  o += narrow ? leaf(8,610,-30,.8) : leaf(30,392,-25,1.1)+leaf(870,396,200,.9,true);
+  let bx,by,bs,path,R,pos,range;
+  if(narrow){
+    bx=0; by=30; bs=.6; R=40;
+    path = "M70 50C150 120 260 60 392 122C440 200 424 330 330 362C240 392 130 346 22 398";
+    pos = [[78,210],[210,210],[342,210],[342,470],[210,470],[78,470]];
+    range = [[0,.5],[0,.5],[0,.5],[.55,1],[.55,1],[.55,1]];
+  } else {
+    bx=18; by=40; bs=.82; R=48;
+    path = "M112 74C250 150 380 40 520 112S760 160 888 92";
+    pos = [[165,250],[300,250],[435,250],[570,250],[705,250],[835,250]];
+    range = Array(6).fill([0,1]);
+  }
+  o += `<path class="string" id="string" d="${path}"/>`;
+  o += `<g id="threads"></g>`;
+  o += bird(bx,by,bs,animate);
+  keys.forEach((k,i)=>{
+    const [x,y]=pos[i], [c,f]=SUBJ_COL[k];
+    const lines = LABEL[k] || [k];
+    const ls = narrow?14.5:16.5;
+    o += `<g class="node sat-node ${animate?'dropping':''} ${state.sat===k?'sel':''}" data-sat="${k}" tabindex="0" role="button" aria-pressed="${state.sat===k}" aria-label="${lines.join(' ')}" style="--c:${c};--c-fill:${f};animation-delay:${animate? (350+i*90):0}ms">
+      <circle class="halo" cx="${x}" cy="${y}" r="${R+9}"/>
+      <circle class="disc" cx="${x}" cy="${y}" r="${R}"/>
+      <g transform="translate(${x-R*.62} ${y-R*.62}) scale(${R*1.24/48})"><g class="ico">${ICONS[k==='__terr'?'terr':k]}</g></g>
+      ${labelText(x, y+R+ls+8, lines, ls)}
+    </g>`;
+  });
+  svg.innerHTML = o;
+  // hilos desde la cuerda
+  const sp = document.getElementById("string");
+  const L = sp.getTotalLength();
+  const samples = []; for(let t=0;t<=400;t++){ const p = sp.getPointAtLength(L*t/400); samples.push([t/400,p.x,p.y]); }
+  let th = "";
+  pos.forEach(([x,y],i)=>{
+    const [a,b]=range[i];
+    let best=null; for(const s of samples){ if(s[0]<a||s[0]>b) continue; if(!best||Math.abs(s[1]-x)<Math.abs(best[1]-x)) best=s; }
+    th += `<g class="${animate?'dropping':''}" style="animation-delay:${animate?(350+i*90):0}ms"><path class="thread" d="M${best[1].toFixed(1)} ${best[2].toFixed(1)}L${x} ${y-R}"/><circle class="knot" cx="${best[1].toFixed(1)}" cy="${best[2].toFixed(1)}" r="5"/></g>`;
+  });
+  document.getElementById("threads").innerHTML = th;
+  if(animate && !matchMedia("(prefers-reduced-motion: reduce)").matches){
+    sp.style.strokeDasharray = L; sp.style.strokeDashoffset = L;
+    sp.getBoundingClientRect();
+    sp.style.transition = "stroke-dashoffset .7s ease-out"; sp.style.strokeDashoffset = 0;
+  }
+}
+
+function draw(animate){
+  narrow = svg.parentElement.clientWidth < 600;
+  if(state.theme) drawTheme(animate); else drawOverview();
+  const back = document.getElementById("back"), crumb = document.getElementById("crumb"), q = document.getElementById("question");
+  back.hidden = !state.theme;
+  crumb.innerHTML = state.theme ? `Tu territorio / <b>${DATA[state.theme].name}</b>` : "Tu territorio: elige un tema";
+  if(state.theme){
+    q.hidden = false;
+    q.innerHTML = `${iconSvg("target",44)}<div><small>Pregunta que une a todo el curso</small>${DATA[state.theme].q}</div>`;
+  } else q.hidden = true;
+  svg.querySelectorAll(".node").forEach(n=>{
+    const act = ()=>{
+      if(n.dataset.theme) openTheme(n.dataset.theme);
+      else { state.sat = n.dataset.sat; draw(false); renderPanel(); }
+    };
+    n.addEventListener("click", act);
+    n.addEventListener("keydown", e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); act(); }});
+  });
+}
+function openTheme(k){ state = { theme:k, sat:"__terr" }; draw(true); renderPanel(); renderLevels(); }
+document.getElementById("back").addEventListener("click", ()=>{ state={theme:null,sat:null}; draw(false); renderPanel(); renderLevels(); });
+let rt; addEventListener("resize", ()=>{ clearTimeout(rt); rt=setTimeout(()=>{ const was=narrow; narrow = svg.parentElement.clientWidth < 600; if(was!==narrow) draw(false); },150); });
+
+/* ---------- Panel ---------- */
+const panel = document.getElementById("panel");
+function renderPanel(){
+  if(!state.theme){
+    panel.innerHTML = `<p class="kicker">Cómo usar este mapa</p>
+      <h3 style="margin:4px 0 12px">Un tema del territorio puede reunir a todo el curso</h3>
+      <p>Cada tema despliega los saberes que ya existen en la comunidad y los saberes escolares que se pueden articular con ellos.</p>
+      <p>Más abajo verás cómo se reparte el trabajo entre los niveles y cómo se organiza la clase.</p>
+      <div class="chips">${THEMES.map(k=>`<button class="chip" data-open="${k}">${DATA[k].name}</button>`).join("")}</div>`;
+    panel.querySelectorAll("[data-open]").forEach(b=>b.addEventListener("click",()=>openTheme(b.dataset.open)));
+    return;
+  }
+  const d = DATA[state.theme], k = state.sat, [c,f] = SUBJ_COL[k];
+  const head = (title)=>`<div class="p-head"><div class="p-ico" style="--c:${c};--c-fill:${f}">${iconSvg(k==='__terr'?'terr':k,40)}</div><div><p class="kicker">${d.name}</p><h3>${title}</h3></div></div>`;
+  let body;
+  if(k==="__terr"){
+    body = `<div class="p-grid"><div>${head("Saberes del territorio")}<p class="hint" style="margin-top:0">Este es el punto de partida. Toca una asignatura en el mapa para ver qué saber escolar se conecta con él.</p></div><div><p>${d.terr}</p>
+      <div class="chips" aria-label="Saberes de la comunidad">${d.voices.map(v=>`<span class="chip" style="cursor:default;border-color:var(--yellow);background:var(--yellow-soft)">${v}</span>`).join("")}</div></div></div>`;
+  } else {
+    const [school, link] = d.subjects[k];
+    body = `<div class="p-grid"><div>${head(k)}<p class="hint" style="margin-top:0">${k} aporta una mirada propia al tema común, sin perder el hilo que comparte todo el curso.</p></div>` + `<div class="pair"><div class="school"><b>Qué se puede trabajar</b>${school}</div><div class="terr"><b>Cómo se conecta con el territorio</b>${link}</div></div></div>`;
+  }
+  const all = ["__terr",...SUBJ];
+  body += `<div class="chips" style="margin-top:20px;border-top:2px dashed var(--surface-2);padding-top:18px">${all.map(s=>`<button class="chip ${s===k?'on':''}" data-sat="${s}" aria-pressed="${s===k}">${s==='__terr'?'Territorio':s}</button>`).join("")}</div>`;
+  panel.innerHTML = body;
+  panel.querySelectorAll("button[data-sat]").forEach(b=>b.addEventListener("click",()=>{ state.sat=b.dataset.sat; draw(false); renderPanel(); }));
+}
+
+/* ---------- Niveles, momentos, por qué ---------- */
+function renderLevels(){
+  const k = state.theme || "agua", d = DATA[k];
+  document.getElementById("levels-title").textContent = `Un mismo tema, tres niveles: ${d.name.toLowerCase()}`;
+  document.getElementById("levels-intro").textContent = state.theme
+    ? "Cada nivel sube un peldaño de complejidad sobre el mismo tema. Los cursos pueden agruparse distinto según tu escuela."
+    : "Mientras eliges un tema en el mapa, aquí tienes el ejemplo del agua.";
+  document.getElementById("stairs").innerHTML = d.levels.map(([lv,verb,txt],i)=>`
+    <div class="step"><div class="num">${i+1}</div><h3>${lv}</h3><span class="verb">${verb}</span><p>${txt}</p></div>`).join("");
+  document.getElementById("common").innerHTML = `${iconSvg("target",40)}<p>${d.common}</p>`;
+  document.getElementById("flow").innerHTML = `
+    <div class="moment together"><h3>${iconSvg("terr",30)}Inicio común</h3><p>${d.start}</p></div>
+    <div class="moment split"><h3>${iconSvg("Lenguaje",30)}Desarrollo diferenciado</h3><ul>${d.levels.map(([lv,verb])=>`<li><span>${lv}</span>${verb}</li>`).join("")}</ul><p class="hint" style="margin-top:12px">Mientras el docente acompaña a un grupo, los otros avanzan con guías o con tutoría entre pares.</p></div>
+    <div class="moment together"><h3>${iconSvg("target",30)}Cierre común</h3><p>${d.end}</p></div>`;
+}
+document.getElementById("why").innerHTML = [
+  ["Lenguaje","Un solo plan","Se buscan los contenidos comunes entre grados en vez de planificar cada curso por separado."],
+  ["Ciencias","Varias miradas","Las asignaturas se unen alrededor de un problema y lo explican desde distintos ángulos."],
+  ["terr","Saberes que circulan","Estudiantes de distintos grados comparten la experiencia y aprenden unos de otros."],
+  ["Historia","Menos fragmentación","El docente deja de correr entre clases paralelas y ordena el tiempo del grupo."]
+].map(([ic,t,p])=>`<div>${iconSvg(ic,40)}<b>${t}</b>${p}</div>`).join("");
+
+/* ---------- Tu turno ---------- */
+const FIELDS = ["f-tema","f-preg","f-terr","f-n1","f-n2","f-n3","f-ini","f-cie"];
+const KEY = "integrar-saberes-mi-mapa";
+const status = document.getElementById("status");
+function load(){ try{ const v=JSON.parse(localStorage.getItem(KEY)||"{}"); FIELDS.forEach(id=>{ if(v[id]) document.getElementById(id).value=v[id]; }); }catch(e){} }
+function save(){ try{ const v={}; FIELDS.forEach(id=>v[id]=document.getElementById(id).value); localStorage.setItem(KEY,JSON.stringify(v)); }catch(e){} }
+FIELDS.forEach(id=>document.getElementById(id).addEventListener("input",save));
+function asText(){
+  const g=id=>document.getElementById(id).value.trim()||"(por completar)";
+  return `Tema del territorio: ${g("f-tema")}\nPregunta que une al curso: ${g("f-preg")}\n\nSaberes de la comunidad: ${g("f-terr")}\n\nInicio común: ${g("f-ini")}\n\nDesarrollo diferenciado\n- Más pequeños: ${g("f-n1")}\n- Nivel intermedio: ${g("f-n2")}\n- Mayores: ${g("f-n3")}\n\nCierre común: ${g("f-cie")}`;
+}
+document.getElementById("copy").addEventListener("click", async ()=>{
+  const text=asText();
+  try{ await navigator.clipboard.writeText(text); status.textContent="Planificación copiada. Pégala en tu documento."; }
+  catch(e){
+    const ta=document.createElement("textarea"); ta.value=text; document.body.appendChild(ta); ta.select();
+    let ok=false; try{ ok=document.execCommand("copy"); }catch(_){}
+    ta.remove();
+    status.textContent = ok ? "Planificación copiada. Pégala en tu documento." : "No se pudo copiar automáticamente. Copia el texto de los campos a mano.";
+  }
+});
+document.getElementById("clear").addEventListener("click",()=>{ FIELDS.forEach(id=>document.getElementById(id).value=""); try{localStorage.removeItem(KEY);}catch(e){} status.textContent="Campos borrados."; });
+
+load(); draw(false); renderPanel(); renderLevels();
+</script>
+</body>
+</html>
